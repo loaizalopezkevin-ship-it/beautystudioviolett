@@ -448,7 +448,7 @@ header {
 .diseno-acciones .btn { flex: 1; padding: 8px 10px; font-size: 13px; }
 .btn-peligro { background: var(--white); color: var(--error); border: 1.5px solid #e8b4ae; }
 
-/* Editor de diseños (solo administradoras) */
+
 .editor {
   margin-top: 20px;
   padding: 20px;
@@ -960,17 +960,14 @@ async function cargarFidelidad(uid) {
     pintarSellos(0);
   }
 }
-
-/* --- Clienta: el QR abre la página con ?sello=CÓDIGO --- */
 function recibirCodigoDeLaURL() {
   const token = new URLSearchParams(location.search).get("sello");
   if (!token || !/^[A-Za-z0-9-]+$/.test(token)) return;
 
-  localStorage.setItem(CLAVE_SELLO_PENDIENTE, token);   // se canjea al iniciar sesión
-  history.replaceState(null, "", location.pathname);    // limpia la URL
+  localStorage.setItem(CLAVE_SELLO_PENDIENTE, token);
+  history.replaceState(null, "", location.pathname);    
   mostrarSeccion("fidelidad");
 }
-
 const ERRORES_QR = {
   invalido: "Este código no es válido.",
   usado:    "Este código ya fue usado.",
@@ -1025,7 +1022,7 @@ async function canjearSelloPendiente() {
   } catch (e) {
     console.error(e);
     const sinRed = e.code === "unavailable";
-    if (!sinRed) localStorage.removeItem(CLAVE_SELLO_PENDIENTE);   // sin red se conserva para reintentar
+    if (!sinRed) localStorage.removeItem(CLAVE_SELLO_PENDIENTE); 
     mostrarMensaje(
       msg,
       sinRed ? "Sin conexión. Abre esta página de nuevo con internet para registrar tu sello."
@@ -1038,7 +1035,7 @@ async function canjearSelloPendiente() {
   mostrarSeccion("fidelidad");
 }
 
-/* --- Administradora: genera un QR de un solo uso (tipo: "sello" o "reinicio") --- */
+
 let dejarDeEscuchar = null;
 
 async function generarQR(tipo) {
@@ -1063,7 +1060,7 @@ async function generarQR(tipo) {
   const hora = new Date(expira).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
   mostrarMensaje(estado, `${nombre}: sirve una sola vez, hasta las ${hora}.`);
 
-  // Avisa cuando la clienta lo escanea
+
   if (dejarDeEscuchar) dejarDeEscuchar();
   dejarDeEscuchar = onSnapshot(doc(db, "codigosQR", token), (snap) => {
     if (!snap.data()?.usado) return;
@@ -1084,10 +1081,6 @@ $("btn-qr-canje").addEventListener("click", () => generarQR("reinicio"));
 
 recibirCodigoDeLaURL();
 
-/* ==========================================================================
-   SERVICIOS Y DISEÑOS (cada servicio tiene su lista de diseños)
-   Firestore: servicios/{servicio}/disenos/{id} -> { nombre, descripcion, imagenes[], creado }
-   ========================================================================== */
 const panel = $("detalle-servicio");
 const tituloEl = $("detalle-titulo");
 const listaEl = $("lista-disenos");
@@ -1101,14 +1094,14 @@ const fotosInput = $("editor-fotos");
 const btnGuardar = $("editor-guardar");
 const editorMsg = $("editor-msg");
 
-const cache = {};            // diseños ya cargados por servicio
+const cache = {};            
 let servicioAbierto = null;
-let disenoEditando = null;   // id del diseño que se edita (null = diseño nuevo)
-let fotosEditor = [];        // fotos del formulario (data URL)
+let disenoEditando = null;   
+let fotosEditor = [];     
 
 const coleccion = (servicioId) => collection(db, "servicios", servicioId, "disenos");
 
-/** Devuelve la lista de diseños, o null si no se pudo cargar. */
+
 async function cargarDisenos(servicioId, forzar = false) {
   if (cache[servicioId] && !forzar) return cache[servicioId];
   try {
